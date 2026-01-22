@@ -29,5 +29,5 @@ typedef struct {
     u8 unk2[0x54];
 } RaceModeOnlineVs; // Total size 0x174
 
-RaceHeader2VS* GetRaceHeader2Buffer(u32 param_1, u32 playerId);
-void clearSendRH2(u32 ptr_miscPacketHandler);
+RaceHeader2VS* GetRaceHeader2Buffer(void* param_1, u32 playerId);
+void clearSendRH2(void* ptr_miscPacketHandler);
