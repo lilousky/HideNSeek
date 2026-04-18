@@ -35,4 +35,5 @@ SECTIONS {
 	NoMusic = 0x80004000;
 	/* (DEPRECATED) CTSupport = 0x8000400E; */
 	ThirtyFPS = 0x8000400F;
+	WiimmfiToggle = 0x80004010;
 }

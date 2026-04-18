@@ -4,7 +4,8 @@ void CupScreenPatch();
 void BattleCupScreenPatch();
 
 // This function loads all the codes that HideNSeek uses after StaticR has loaded
-void loadCodes() {
+void loadCodes()
+{
 
 	// These values will be used as filler throughout the function
 	u8 tempVal8;
@@ -14,19 +15,66 @@ void loadCodes() {
 	// Exception Handler (by Star)
 	directWrite32(ShowExceptions, 0);
 
-	// WiiLink Code Patches (by The WiiLink Team, ported by Palapeli and Ismy)
-	directWriteArray(WL_Code_Text_Hook, WL_Code_Text, 0x58);
-	directWriteArray(WL_Code_Data_Hook, WL_Code_Data, 0x4C);
-	
-	// WiiLink Auth response
-	directWriteArray(WL_Auth_Response_Hook, WL_Auth_Response, 0x8);
-	
-	// WiiLink String Patches
-	directWriteArray(WL_Domain_Hook, WL_Domain, 0x11);
-	directWriteArray(WL_URL_Hook, WL_URL, 0x18);
-	
-	// WiiLink Skip DNS request caching
-	directWrite32(WL_Skip_DNS, 0x480001F4);
+	if (WiimmfiToggle == 1)
+	{
+		// Wiimmfi Code Patches (by Leseratte)
+		directWriteNop(WiimmfiPatch1);
+		directWrite32(WiimmfiPatch2, 0x3BC00000);
+		directWriteBranch(WiimmfiPatch3, WiimmfiASM1, false);
+		directWriteBranch(WiimmfiPatch4, WiimmfiASM2, false);
+
+		// Wiimmfi Domain Name Patches (by Seeky)
+		directWriteString(WiimmfiVersionString, "LE-CODE GCT v1 ");
+		directWriteString(WiimmfiURLs, "://ca.nas.wiimmfi.de/ca");
+		directWriteStringOffset(WiimmfiURLs, 0x28, "://naswii.wiimmfi.de/ac");
+		directWriteStringOffset(WiimmfiURLs, 0xA8, "://naswii.wiimmfi.de/pr");
+
+#ifdef REGION_P
+		directWriteStringOffset(WiimmfiURLs, 0x50, "main.nas.wiimmfi.de/pp");
+#elif REGION_E
+		directWriteStringOffset(WiimmfiURLs, 0x50, "main.nas.wiimmfi.de/pe");
+#elif REGION_J
+		directWriteStringOffset(WiimmfiURLs, 0x50, "main.nas.wiimmfi.de/pj");
+#elif REGION_K
+		directWriteStringOffset(WiimmfiURLs, 0x50, "main.nas.wiimmfi.de/pk");
+#endif
+
+		directWriteStringOffset(WiimmfiURLs, 0x964, "wiimmfi.de");	// Available
+		directWriteStringOffset(WiimmfiURLs, 0x10D4, "wiimmfi.de"); // GPCM
+		directWriteStringOffset(WiimmfiURLs, 0x1AEC, "wiimmfi.de"); // GPSP
+		directWriteStringOffset(WiimmfiURLs, 0x2C8D, "wiimmfi.de"); // Master
+		directWriteStringOffset(WiimmfiURLs, 0x38A7, "wiimmfi.de"); // Natneg
+		directWriteStringOffset(WiimmfiURLs, 0x38C3, "wiimmfi.de");
+		directWriteStringOffset(WiimmfiURLs, 0x38DF, "wiimmfi.de");
+		directWriteStringOffset(WiimmfiURLs, 0x3A2F, "wiimmfi.de"); // MS
+		directWriteStringOffset(WiimmfiURLs, 0x3AB3, "wiimmfi.de"); // SAKE
+
+		// Wiimmfi Login Region Changer (by Atlas)
+		directWriteString(LoginRegion, "120053");
+
+		// VS Matchmaking Region Patch (by Leseratte)
+		tempVal32 = 0x38E04E55;
+		directWrite32(VSRegion, 0x38A04E55);
+		directWrite32(VSRegion2, tempVal32);
+		directWrite32Offset(VSRegion2, 0x518, tempVal32);
+		directWrite32(VSRegion3, 0x38800055);
+	} else {
+		
+		
+		// WiiLink Code Patches (by The WiiLink Team, ported by Palapeli and Ismy)
+		directWriteArray(WL_Code_Text_Hook, WL_Code_Text, 0x58);
+		directWriteArray(WL_Code_Data_Hook, WL_Code_Data, 0x4C);
+
+		// WiiLink Auth response
+		directWriteArray(WL_Auth_Response_Hook, WL_Auth_Response, 0x8);
+
+		// WiiLink String Patches
+		directWriteArray(WL_Domain_Hook, WL_Domain, 0x11);
+		directWriteArray(WL_URL_Hook, WL_URL, 0x18);
+
+		// WiiLink Skip DNS request caching
+		directWrite32(WL_Skip_DNS, 0x480001F4);
+	}
 
 	// Always Win Track Vote (by Star, modified by Seeky & CLF78)
 	directWriteBranch(AlwaysWinVoteHook, VotePatch, true);
@@ -93,8 +141,8 @@ void loadCodes() {
 	directWriteBranch(ForceCCHook, ForceCC, true);
 
 	// Force Teams On (by CLF78)
-	directWrite32(FixResults, 0x38000000); // Disables team colors in the final room results
-	directWrite32(ResetSeeker, 0x38C00001); // Forces blue team on each player (written later)
+	directWrite32(FixResults, 0x38000000);				// Disables team colors in the final room results
+	directWrite32(ResetSeeker, 0x38C00001);				// Forces blue team on each player (written later)
 	directWrite32Offset(ResetSeeker, 0xB4, 0x38E00002); // Forces teams mode
 
 	// Friend Room Race Count Modifier (by MrBean, modified by CLF78)
@@ -125,8 +173,8 @@ void loadCodes() {
 	// Infinite Star Timer + No Star Invincibility (by CLF78)
 	directWrite32(InfiniteStarHook, 0x7C601B78);
 	directWrite32(InfiniteStarHook2, 0x48000044);
-	directWrite16Offset(StarFunc, 0x74, tempVal16); // remove offroad invincibility
-	directWriteBranch(NoStarInvincibilityHook, NoStarInvincibility, false); // enable damage from items
+	directWrite16Offset(StarFunc, 0x74, tempVal16);							 // remove offroad invincibility
+	directWriteBranch(NoStarInvincibilityHook, NoStarInvincibility, false);	 // enable damage from items
 	directWriteBranch(NoStarInvincibilityHook2, NoStarInvincibility2, true); // enable damage from objects
 	directWriteBranch(NoStarInvincibilityHook3, NoStarInvincibility3, true); // enable damage from players
 
@@ -157,7 +205,7 @@ void loadCodes() {
 
 	// KMP - Track Identifier (by CLF78)
 	directWriteBranch(TrackIdentifierHook, TrackIdentifier, false);
-	directWrite32(TrackIdentifierHook2, 0x48000010);	// These initialize the ENPH/ENPT sections before the others so other sections can use the ENPT CRC to apply patches
+	directWrite32(TrackIdentifierHook2, 0x48000010); // These initialize the ENPH/ENPT sections before the others so other sections can use the ENPT CRC to apply patches
 	directWriteBranchOffset(TrackIdentifierHook2, 0x30, TrackIdentifier2, false);
 	directWriteBranchOffset(TrackIdentifierHook2, 0xC, TrackIdentifier3, false);
 
@@ -180,16 +228,16 @@ void loadCodes() {
 
 	// Main Menu Mod (by CLF78)
 	directWriteBranch(MainMenuButtonSetup, MainMenuButtonSetup1, true); // Hides offline options and moves Wifi+Channel ones
-	directWrite8Offset(MainMenuButtonSetup, 0x2B, 0); // Disables the buttons for the hidden options
+	directWrite8Offset(MainMenuButtonSetup, 0x2B, 0);					// Disables the buttons for the hidden options
 	directWrite32Offset(MainMenuButtonSetup, 0x30, 0x480006DC);
 	directWrite8Offset(MainMenuButtonSetup, 0x127, 0);
 	directWrite32Offset(MainMenuButtonSetup, 0x12C, 0x480005E0);
-	directWrite8Offset(MainMenuButtonSetup, 0x413, 1); // Disables 2P Wifi button
-	directWrite8Offset(MainMenuButtonSetup, 0x48F, 0x18); // Expands 1P Wifi button to fill the empty space
-	directWrite8Offset(MainMenuButtonSetup, 0x4F7, 0xA4); // Fixes THP cropping
+	directWrite8Offset(MainMenuButtonSetup, 0x413, 1);								  // Disables 2P Wifi button
+	directWrite8Offset(MainMenuButtonSetup, 0x48F, 0x18);							  // Expands 1P Wifi button to fill the empty space
+	directWrite8Offset(MainMenuButtonSetup, 0x4F7, 0xA4);							  // Fixes THP cropping
 	directWriteBranchOffset(MainMenuButtonSetup, 0x504, MainMenuButtonSetup2, false); // Removes text inside 1P Wifi button
-	directWriteBranch(MainMenuCrashFixHook, MainMenuCrashFix, true); // Changes default button selection to prevent crashes
-	directWrite8(MKChannelRedirect, 0x3B); // Redirects MK Channel to the Credits Part 2 scene
+	directWriteBranch(MainMenuCrashFixHook, MainMenuCrashFix, true);				  // Changes default button selection to prevent crashes
+	directWrite8(MKChannelRedirect, 0x3B);											  // Redirects MK Channel to the Credits Part 2 scene
 
 	// Message Editor (by CLF78)
 	directWriteBranch(MessageEditorHook, MessageEditor, true);
@@ -237,9 +285,9 @@ void loadCodes() {
 	directWrite16(VersionString7, tempVal16);
 	directWrite16(VersionString8, tempVal16);
 
-    // Patch.szs (by CLF78)
-    directWrite8(SZSCount, 4);
-    directWriteBranch(PatchSZSHook, PatchSZS, false);
+	// Patch.szs (by CLF78)
+	directWrite8(SZSCount, 4);
+	directWriteBranch(PatchSZSHook, PatchSZS, false);
 
 	// Remove Mushroom Bug (by Vega)
 	directWrite8(NoMushroomBug, 0);
@@ -321,12 +369,14 @@ void loadCodes() {
 	directWriteBranch(CheckTrackIdentHook, CheckTrackIdent, false);
 
 	// Disable Track Music (by CosmoCourtney)
-	if (NoMusic == 1) {
+	if (NoMusic == 1)
+	{
 		directWrite32(NoMusicHook, 0x38600000);
 	}
 
 	// 30 FPS (by CLF78)
-	if (ThirtyFPS == 1) {
+	if (ThirtyFPS == 1)
+	{
 		directWrite32(ThirtyFPSHook, 0x3BE00002);
 		directWrite8Offset(ThirtyFPSHook, 0x397, 2);
 		directWriteNopOffset(ThirtyFPSHook, 0x3A0);

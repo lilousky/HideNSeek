@@ -7,6 +7,11 @@
 					<patch id="hns" />
 				</choice>
 			</option>
+			<option name="Wiimmfi Toggle">
+				<choice name="Enabled">
+					<patch id="hnswiimmfi" />
+				</choice>
+			</option>
 			<option name="My Stuff">
 				<choice name="HNS">
 					<patch id="mystuffhns" />
@@ -40,6 +45,9 @@
 		<memory valuefile="/hns/Loader.bin" offset="0x80004010" />
 		<memory offset="0x8000629C" value="4BFFDF58" />
 		<folder external="/hns/hns" disc="/hns" create="true"/>
+	</patch>
+	<patch id="hnswiimmfi">
+		<memory offset="0x80004010" value="01"/>
 	</patch>
 	<patch id="mythingsctgp">
 		<folder external="/ctgpr/My Stuff" recursive="false" />
